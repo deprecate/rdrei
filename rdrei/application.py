@@ -8,8 +8,10 @@ from datetime import datetime, timedelta
 
 from rdrei.utils import session, metadata, local, local_manager, url_map,\
         Request
-from rdrei.controllers import get_controller
-import rdrei.models
+from rdrei.controllers import get_controller, BaseController
+import rdrei.models, logging
+
+log = logging.getLogger(__name__)
 
 HERE_PATH = path.dirname(__file__)
 
@@ -22,6 +24,9 @@ class RdreiApplication(object):
         self.dispatch = SharedDataMiddleware(self.dispatch, {
             '/static':  self.get_config('locations', 'static')
         })
+
+        self.load_controllers()
+        BaseController.expose_all()
 
     def bind_to_context(self):
         local.application = self
@@ -63,6 +68,12 @@ class RdreiApplication(object):
         return ClosingIterator(response(environ, start_response),
                                [session.remove, local_manager.cleanup])
 
+    def load_controllers(self):
+        for controller in [c.strip() for c in self.get_config("controllers",
+                                                             "load").split(',')]:
+            __import__("rdrei.controllers.%s" % controller, None, None, [''])
+
     def __call__(self, environ, start_response):
         return self.dispatch(environ, start_response)
+
 

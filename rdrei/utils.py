@@ -7,7 +7,7 @@ from babel import Locale
 from jinja2 import Environment, PackageLoader
 from hashlib import sha1
 from random import random
-import time
+import time, logging
 
 from rdrei.i18n import get_translations
 from rdrei.urls import url_map
@@ -15,14 +15,16 @@ from rdrei.local import local, local_manager
 
 application = local('application')
 
+log = logging.getLogger(__name__)
+
 metadata = MetaData()
 session = scoped_session(lambda: create_session(application.database_engine,
                          autocommit=True), local_manager.get_ident)
 
 def expose(rule, **kw):
     def decorate(f):
-        kw['endpoint'] = f.__name__
-        url_map.add(Rule(rule, **kw))
+        kw['endpoint'] = f.__module__.split('.')[-1]+"/"+f.__name__
+        setattr(f, 'rule', Rule(rule, **kw))
         return f
     return decorate
 

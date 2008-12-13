@@ -4,6 +4,6 @@ url_map = Map([
     Rule('/static/<file>', endpoint='static', build_only=True),
 
     # Blog
-    Rule('/', endpoint="test/index")
+    #Rule('/', endpoint="test/index")
 ])
 

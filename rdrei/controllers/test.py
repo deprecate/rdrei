@@ -6,3 +6,4 @@ class TestController(object):
         return render_template('index.html')
 
 controller = TestController
+

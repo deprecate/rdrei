@@ -6,7 +6,7 @@ def make_app():
     return RdreiApplication()
 
 def make_shell():
-    from shorty import models, utils
+    from rdrei import models, utils
     application = make_app()
     return locals()
 
