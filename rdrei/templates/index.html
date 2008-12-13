@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% set active_navigation_item = "home" %}
+{% block title %}{% trans %}Blog Index{% endtrans %}{% endblock %}
+{% block content %}
+{% for entry in entries%}
+<div class="post">
+	<h2>{{entry.title}}</h2>
+	<div class="meta">{% trans username=entry.username %}By {{username}}{% endtrans %}</div>
+	<p>{{entry.message}}</p>
+</div>
+{% else %}
+<div class="error">{{ _("No posts found.") }}</div>
+{% endfor %}
+{% endblock %}
+

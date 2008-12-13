@@ -1,0 +1,11 @@
+*.pyc
+*~
+march.sqlite
+march.log
+settings_local.py
+secret.txt
+django_errors.log
+tags
+*.swp
+*.swo
+*.pidaproject
