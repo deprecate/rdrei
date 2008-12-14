@@ -2,11 +2,16 @@
 {% set active_navigation_item = "home" %}
 {% block title %}{% trans %}Blog Index{% endtrans %}{% endblock %}
 {% block content %}
+{% if msg %}
+<div class="info">
+	{{msg|e}}
+</div>
+{% endif %}
 {% for entry in entries%}
 <div class="post">
-	<h2>{{entry.title}}</h2>
-	<div class="meta">{% trans username=entry.username %}By {{username}}{% endtrans %}</div>
-	<p>{{entry.message}}</p>
+	<h2>{{entry.title|e}}</h2>
+	<div class="meta">{% trans username=entry.username|e %}By {{username}}{% endtrans %}</div>
+	<p>{{entry.message|e}}</p>
 </div>
 {% else %}
 <div class="error">{{ _("No posts found.") }}</div>

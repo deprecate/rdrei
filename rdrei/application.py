@@ -1,10 +1,11 @@
 from sqlalchemy import create_engine
 from werkzeug import ClosingIterator, SharedDataMiddleware
 from werkzeug.exceptions import HTTPException, NotFound
+from beaker.middleware import CacheMiddleware, SessionMiddleware
 
 from os import path
 from ConfigParser import SafeConfigParser
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from rdrei.utils import session, metadata, local, local_manager, url_map,\
         Request
@@ -21,12 +22,21 @@ class RdreiApplication(object):
         db_uri = self.get_config("database", "sqlalchemy.url")
         self.database_engine = create_engine(db_uri, convert_unicode=True)
 
+        self.make_middleware()
+
+        if self.config.getboolean("controllers", "preload.enabled"):
+            self.load_controllers()
+            BaseController.expose_all()
+
+    def make_middleware(self):
         self.dispatch = SharedDataMiddleware(self.dispatch, {
             '/static':  self.get_config('locations', 'static')
         })
+        self.dispatch = CacheMiddleware(self.dispatch,
+                                        dict(self.config.items("general")))
+        self.dispatch = SessionMiddleware(self.dispatch,
+                                          dict(self.config.items("general")))
 
-        self.load_controllers()
-        BaseController.expose_all()
 
     def bind_to_context(self):
         local.application = self
@@ -59,18 +69,13 @@ class RdreiApplication(object):
             response.status_code = 404
         except HTTPException, e:
             response = e.get_response(environ)
-        else:
-            expires = datetime.utcnow() + timedelta(days=31)
-            if request.first_visit or request.session.should_save:
-                request.session.save_cookie(response, self.get_config("general", "cookie.name"),
-                                            expires=expires)
 
         return ClosingIterator(response(environ, start_response),
                                [session.remove, local_manager.cleanup])
 
     def load_controllers(self):
         for controller in [c.strip() for c in self.get_config("controllers",
-                                                             "load").split(',')]:
+                                                             "preload").split(',')]:
             __import__("rdrei.controllers.%s" % controller, None, None, [''])
 
     def __call__(self, environ, start_response):

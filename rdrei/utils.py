@@ -59,11 +59,7 @@ class Request(RequestBase):
     def __init__(self, environ):
         super(Request, self).__init__(environ)
         self.first_visit = False
-        session = SecureCookie.load_cookie(self,
-                                           application.get_config("general",
-                                                                  "cookie.name"),
-                                           application.get_config("general",
-                                                                 "cookie.secret"))
+        session = environ['beaker.session']
         user_hash = session.get('user_hash')
 
         if not user_hash:
@@ -71,6 +67,7 @@ class Request(RequestBase):
             self.first_visit = True
         self.user_hash = session['user_hash']
         self.session = session
+        self.cache = environ['beaker.cache']
 
         # language is limited to english until translations are ready
         lang = session.get('locale')
