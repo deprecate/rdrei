@@ -1,11 +1,15 @@
+from rdrei.local import local
+
 def get_controller(name):
     if '/' in name:
         cname, hname = name.split('/')
     else:
         return __import__('rdrei.controllers.%s' % name, None, None, [''])
 
-    module = __import__('rdrei.controllers.%s' % cname, None, None, [''])
-    controller = module.controller()
+    controller = local.application.cache.get_controller(cname)
+    if not controller:
+        module = __import__('rdrei.controllers.%s' % cname, None, None, [''])
+        controller = module.controller()
     return getattr(controller, hname)
 
 class BaseController(object):
