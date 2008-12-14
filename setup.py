@@ -16,7 +16,8 @@ setup(
         "Werkzeug",
         "jinja2",
         "Babel",
-        "sqlalchemy"
+        "sqlalchemy",
+        "beaker",
     ],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
