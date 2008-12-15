@@ -12,7 +12,7 @@ class BlogController(BaseController):
         self.request.set_language(lang)
         return BaseResponse(self.request._("Hello, World!")+" Locale: %s" % self.request.locale)
 
-    @expose("/test/bla")
+    @expose("/test/test")
     def bla(self):
         return self.render_to_response("index.html", {'msg': "@expose works."})
 
@@ -37,6 +37,5 @@ class BlogController(BaseController):
             return BaseResponse("This should be cached. Wurst is currently %s." %
                                 parameter)
         return BaseResponse("This should be cached. (Watch log to verify.)")
-
 
 controller = BlogController

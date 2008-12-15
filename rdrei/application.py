@@ -55,7 +55,7 @@ class RdreiApplication(object):
         metadata.create_all(self.database_engine)
 
     def import_from_app(self, name, sub = None):
-        _sub = sub or ['']
+        _sub = sub and [sub] or ['']
         app_name = self.config.get("general", "application.name")
         
         module = __import__(app_name+"."+name, None, None, _sub)
