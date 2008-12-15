@@ -34,13 +34,13 @@ def url_for(endpoint, _external=False, **values):
 jinja_env = Environment(loader=PackageLoader('rdrei', 'templates'),
                         extensions=['jinja2.ext.i18n'])
 
-def render_template(template, context=None):
+def render_template(request, template, context=None):
     context = context or {}
     context.update({
         'url_for': url_for,
-        'request': local.request,
-        'gettext': local.request.translations.ugettext,
-        'ngettext': local.request.translations.ungettext
+        'request': request,
+        'gettext': request.translations.ugettext,
+        'ngettext': request.translations.ungettext
     })
     return Response(jinja_env.get_template(template).render(**context),
                     mimetype='text/html')

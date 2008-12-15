@@ -36,7 +36,7 @@ class RdreiApplication(object):
 
     def load_appcache(self):
         self.cache = ApplicationCache(self.config.get("general",
-                                                      "application.name"))
+                                                      "application.name"), self)
 
     def bind_to_context(self):
         local.application = self
@@ -55,10 +55,10 @@ class RdreiApplication(object):
         metadata.create_all(self.database_engine)
 
     def import_from_app(self, name, sub = None):
-        sub = sub or ['']
+        _sub = sub or ['']
         app_name = self.config.get("general", "application.name")
         
-        module = __import__(app_name+"."+name, None, None, sub)
+        module = __import__(app_name+"."+name, None, None, _sub)
         if sub:
             return getattr(module, sub)
         return module
@@ -66,7 +66,10 @@ class RdreiApplication(object):
     def dispatch(self, environ, start_response):
         self.bind_to_context()
         request = Request(environ)
-        request.bind_to_context()
+        # This is ugly and reminds me too much of pylons.
+        # Let's try to live without it and see how much carrying the request
+        # with us annoys us.
+        #request.bind_to_context()
 
         # Get url_map from app_name.urls
         url_map = self.import_from_app("urls", "url_map")
@@ -74,19 +77,18 @@ class RdreiApplication(object):
         local.url_adapter = adapter = url_map.bind_to_environ(environ)
         try:
             endpoint, values = adapter.match(request.path)
-            handler = get_controller(endpoint)
-            response = handler(request, **values)
+            handler = get_controller(request, endpoint)
+            response = handler(**values)
         except NotFound:
-            response = get_controller('static/not_found')(request)
+            response = get_controller(request, 'static/not_found')()
             response.status_code = 404
         except HTTPException, e:
             response = e.get_response(environ)
 
+        request.session.save()
         return ClosingIterator(response(environ, start_response),
-                               [session.remove, local_manager.cleanup,
-                                request.session.save])
+                               [session.remove, local_manager.cleanup])
 
     def __call__(self, environ, start_response):
         return self.dispatch(environ, start_response)
-
 

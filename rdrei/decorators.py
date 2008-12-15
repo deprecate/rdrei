@@ -48,7 +48,7 @@ def beaker_cache(key="cache_default", expire="never", type=None,
         @wraps(func)
         def _wrapper(*args, **kwargs):
             self = args[0]
-            request = args[1]
+            request = self.request
             log.debug("Wrapped with key: %s, expire: %s, type: %s, query_args: %s",
                       key, expire, type, query_args)
             # Checking our ini, whether caching is globally disabled.

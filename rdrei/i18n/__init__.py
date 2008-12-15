@@ -32,26 +32,6 @@ def get_translations(locale):
     _translations[str(locale)] = rv
     return rv
 
-
-def gettext(string):
-    """Translate the given string to the language of the application."""
-    if not request:
-        return string
-    return request.translations.ugettext(string)
-
-
-def ngettext(singular, plural, n):
-    """Translate the possible pluralized string to the language of the
-    application.
-    """
-    request = getattr(local, 'request', None)
-    if not request:
-        if n == 1:
-            return singular
-        return plural
-    return request.translations.ungettext(singular, plural, n)
-
-
 def format_datetime(datetime=None, format='medium'):
     """Return a date formatted according to the given pattern."""
     return _date_format(dates.format_datetime, datetime, format)
@@ -81,8 +61,8 @@ def has_language(language):
     return language in dict(list_languages())
 
 
-def _date_format(formatter, obj, format):
-    request = getattr(local, 'request', None)
+def _date_format(request, formatter, obj, format):
+    # request = getattr(local, 'request', None)
     if request:
         locale = request.locale
     else:
@@ -177,14 +157,12 @@ class _TranslationProxy(object):
             return '<%s broken>' % self.__class__.__name__
 
 
-def lazy_gettext(string):
+def lazy_gettext(request, string):
     """A lazy version of `gettext`."""
-    return _TranslationProxy(gettext, string)
+    return _TranslationProxy(request.translations.gettext, string)
 
 
-def lazy_ngettext(singular, plural, n):
+def lazy_ngettext(request, singular, plural, n):
     """A lazy version of `ngettext`"""
-    return _TranslationProxy(ngettext, singular, plural, n)
+    return _TranslationProxy(request.trlanslations.ngettext, singular, plural, n)
 
-
-_ = gettext
