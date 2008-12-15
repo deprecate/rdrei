@@ -5,7 +5,8 @@
 
     i18n tools originally from LodgeIt!
 
-    :copyright: Copyright 2008 by Armin Ronacher, Christopher Grebs.
+    :copyright: Copyright 2008 by Armin Ronacher, Christopher Grebs,\
+            Pascal Hartig <phartig at rdrei dot net>
     :license: GNU GPL.
 """
 import os

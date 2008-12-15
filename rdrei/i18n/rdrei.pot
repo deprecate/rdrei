@@ -1,17 +1,17 @@
-# German translations for rdrei.
+# Translations template for rdrei.
 # Copyright (C) 2008 ORGANIZATION
 # This file is distributed under the same license as the rdrei project.
 # FIRST AUTHOR <EMAIL@ADDRESS>, 2008.
 #
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: rdrei 0.1\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2008-12-13 21:53+0100\n"
-"PO-Revision-Date: 2008-12-15 14:11+0100\n"
-"Last-Translator: Pascal Hartig <phartig@rdrei.net>\n"
-"Language-Team: de <LL@li.org>\n"
-"Plural-Forms: nplurals=2; plural=(n != 1)\n"
+"POT-Creation-Date: 2008-12-15 14:11+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -19,18 +19,18 @@ msgstr ""
 
 #: rdrei/controllers/blog.py:13
 msgid "Hello, World!"
-msgstr "Hallo, Welt!"
+msgstr ""
 
 #: rdrei/templates/index.html:3
 msgid "Blog Index"
-msgstr "Blog-Übersicht"
+msgstr ""
 
 #: rdrei/templates/index.html:13
 #, python-format
 msgid "By %(username)s"
-msgstr "Von %(username)s"
+msgstr ""
 
 #: rdrei/templates/index.html:17
 msgid "No posts found."
-msgstr "Keine Einträge gefunden."
+msgstr ""
 

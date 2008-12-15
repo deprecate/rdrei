@@ -24,7 +24,7 @@ session = scoped_session(lambda: create_session(application.database_engine,
 def expose(rule, **kw):
     def decorate(f):
         kw['endpoint'] = f.__module__.split('.')[-1]+"/"+f.__name__
-        setattr(f, 'rule', Rule(rule, **kw))
+        url_map.add(Rule(rule, **kw))
         return f
     return decorate
 
@@ -72,8 +72,7 @@ class Request(RequestBase):
         # language is limited to english until translations are ready
         lang = session.get('locale')
         if lang is None:
-            lang = 'en'
-            #lang = (self.accept_languages.best or 'en').split('-')[0]
+            lang = (self.accept_languages.best or 'en').split('-')[0]
         self.locale = Locale.parse(lang)
 
     def set_language(self, lang):
@@ -82,6 +81,9 @@ class Request(RequestBase):
     @property
     def translations(self):
         return get_translations(self.locale)
+
+    def _(self, *args, **kwargs):
+        return self.translations.ugettext(*args, **kwargs)
 
     def bind_to_context(self):
         local.request = self

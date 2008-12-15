@@ -1,15 +1,14 @@
 from sqlalchemy import create_engine
-from werkzeug import ClosingIterator, SharedDataMiddleware, find_modules
+from werkzeug import ClosingIterator, SharedDataMiddleware
 from werkzeug.exceptions import HTTPException, NotFound
 from beaker.middleware import CacheMiddleware, SessionMiddleware
 
 from os import path
 from ConfigParser import SafeConfigParser
-from datetime import datetime
 
-from rdrei.utils import session, metadata, local, local_manager, url_map,\
+from rdrei.utils import session, metadata, local, local_manager,\
         Request
-from rdrei.controllers import get_controller, BaseController
+from rdrei.controllers import get_controller
 from rdrei.appcache import ApplicationCache
 import rdrei.models, logging
 
@@ -25,7 +24,6 @@ class RdreiApplication(object):
 
         self.make_middleware()
         self.load_appcache()
-        BaseController.expose_all()
 
     def make_middleware(self):
         self.dispatch = SharedDataMiddleware(self.dispatch, {
@@ -58,16 +56,20 @@ class RdreiApplication(object):
 
     def import_from_app(self, name, sub = None):
         sub = sub or ['']
-        app_name = self.config.get("general", "app_name")
+        app_name = self.config.get("general", "application.name")
         
         module = __import__(app_name+"."+name, None, None, sub)
+        if sub:
+            return getattr(module, sub)
         return module
         
-
     def dispatch(self, environ, start_response):
         self.bind_to_context()
         request = Request(environ)
         request.bind_to_context()
+
+        # Get url_map from app_name.urls
+        url_map = self.import_from_app("urls", "url_map")
 
         local.url_adapter = adapter = url_map.bind_to_environ(environ)
         try:
@@ -81,7 +83,8 @@ class RdreiApplication(object):
             response = e.get_response(environ)
 
         return ClosingIterator(response(environ, start_response),
-                               [session.remove, local_manager.cleanup])
+                               [session.remove, local_manager.cleanup,
+                                request.session.save])
 
     def __call__(self, environ, start_response):
         return self.dispatch(environ, start_response)

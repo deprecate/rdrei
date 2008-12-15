@@ -1,24 +1,18 @@
 from rdrei.local import local
 
 def get_controller(name):
+    application = local.application
     if '/' in name:
         cname, hname = name.split('/')
     else:
-        return __import__('rdrei.controllers.%s' % name, None, None, [''])
+        return application.import_from_app('controllers.%s' % name)
 
-    controller = local.application.cache.get_controller(cname)
+    controller = application.cache.get_controller(cname)
     if not controller:
-        module = __import__('rdrei.controllers.%s' % cname, None, None, [''])
-        controller = module.controller()
-    return getattr(controller, hname)
+        module = application.import_from_app('controllers.%s' % cname)
+        controller = module.controller
+    return getattr(controller(), hname)
 
 class BaseController(object):
-    @classmethod
-    def expose_all(cls):
-        from rdrei.urls import url_map
-
-        for controller in cls.__subclasses__():
-            for func in vars(controller).values():
-                if hasattr(func, 'rule'):
-                    url_map.add(func.rule)
+    pass
 

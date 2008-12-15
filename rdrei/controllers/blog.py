@@ -1,11 +1,20 @@
 from werkzeug import BaseResponse
-from rdrei.utils import render_template
+from rdrei.utils import render_template, expose
 from rdrei.controllers import BaseController
 from rdrei.decorators import beaker_cache
 
 class BlogController(BaseController):
     def index(self, request):
         return render_template("index.html")
+
+    @expose("/test/i18n/<lang>")
+    def i18n(self, request, lang):
+        request.set_language(lang)
+        return BaseResponse(request._("Hello, World!")+" Locale: %s" % request.locale)
+
+    @expose("/test/bla")
+    def bla(self, request):
+        return render_template("index.html", {'msg': "@expose works."})
 
     def get_session(self, request):
         c = {'msg': "Session value is: "+request.session.get("test_data",
@@ -14,7 +23,6 @@ class BlogController(BaseController):
 
     def set_session(self, request, value):
         request.session['test_data'] = value
-        request.session.save()
         return BaseResponse("Okay, new Value: %s" %
                             request.session.get('test_data'))
 
