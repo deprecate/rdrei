@@ -14,11 +14,11 @@ import rdrei.models, logging
 
 log = logging.getLogger(__name__)
 
-HERE_PATH = path.dirname(__file__)
-
 class RdreiApplication(object):
-    def __init__(self):
-        self._load_config()
+    def __init__(self, configfile):
+        self._load_config(configfile)
+        self.HERE_PATH = path.abspath(path.dirname(configfile))
+
         db_uri = self.get_config("database", "sqlalchemy.url")
         self.database_engine = create_engine(db_uri, convert_unicode=True)
 
@@ -41,14 +41,15 @@ class RdreiApplication(object):
     def bind_to_context(self):
         local.application = self
 
-    def _load_config(self):
+    def _load_config(self, configfile):
         config = SafeConfigParser()
-        config.read(path.join(HERE_PATH, '..', 'config.ini'))
+        #config.read(path.join(HERE_PATH, '..', 'config.ini'))
+        config.read(configfile)
         self.config = config
 
     def get_config(self, section, key):
         return self.config.get(section, key, False, {
-            'here': HERE_PATH
+            'here': self.HERE_PATH
         })
 
     def init_database(self):

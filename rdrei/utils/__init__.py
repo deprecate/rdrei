@@ -31,10 +31,14 @@ def expose(rule, **kw):
 def url_for(endpoint, _external=False, **values):
     return local.url_adapter.build(endpoint, values, force_external=_external)
 
-jinja_env = Environment(loader=PackageLoader('rdrei', 'templates'),
-                        extensions=['jinja2.ext.i18n'])
-
+jinja_env = None
 def render_template(request, template, context=None):
+    global jinja_env
+    if not jinja_env:
+        jinja_env = Environment(loader=PackageLoader(application.config.get("general", "application.name"),
+                                                     'templates'),
+                                extensions=['jinja2.ext.i18n'])
+
     context = context or {}
     context.update({
         'url_for': url_for,
