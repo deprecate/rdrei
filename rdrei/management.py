@@ -9,12 +9,13 @@
  :license: GPL, see doc/LICENSE for more details.
  """
 
+from werkzeug import Template
 import os, re, shutil
 
 class TemplateCommand(object):
     vars = (
         ('appname', "Application Name", 'string'),
-        ('debug', "Enable debug mode? (recommended)", 'bool', True),
+        ('debug_enabled', "Enable debug mode? (recommended)", 'bool', True),
     )
 
     answers = dict()
@@ -60,19 +61,28 @@ class TemplateCommand(object):
         appname = self.answers['appname']
         print("Creating project directory %s …" % appname)
         os.mkdir(appname)
-        os.chdir(appname)
 
     def _copy_templates(self):
-        origin = os.path.join(os.path.dirname(__file__), "project_templates")
+        appname = self.answers['appname']
+        origin = os.path.abspath(os.path.join(os.path.dirname(__file__),
+                                              "project_templates"))
+        os.chdir(appname)
         for fname in os.listdir(os.path.join(origin, "base")):
             print("Creating %s …" % fname)
-            shutil.copyfile(fname, ".")
+            self._patchcopy(os.path.join(origin, "base", fname), fname)
 
         print("Creating project folder …")
         shutil.copytree(os.path.join(origin, "application"),
-                        self.answers['appname'])
+                        appname)
         print("Done.")
-        
+
+    def _patchcopy(self, fname, target):
+        tmpl = open(fname, 'r+')
+        dest = open(target, 'w')
+        t = Template(tmpl.read())
+        dest.write(t.render(self.answers))
+        tmpl.close()
+        dest.close()
 
     def run(self):
         print("Creating new rdrei project.")

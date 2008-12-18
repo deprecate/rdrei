@@ -1,4 +1,5 @@
 from werkzeug import BaseResponse
+from rdrei.controllers import BaseController
 
 class TestController(BaseController):
     def index(self):
@@ -10,3 +11,4 @@ class TestController(BaseController):
         response.status = 404
         return response
 
+controller = TestController
