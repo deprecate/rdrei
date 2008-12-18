@@ -13,7 +13,7 @@ import os
 from babel import Locale, dates, UnknownLocaleError
 from babel.support import Translations
 
-from rdrei.local import local
+from rdrei.core.local import local
 
 import logging
 

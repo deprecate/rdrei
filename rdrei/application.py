@@ -9,8 +9,8 @@ from ConfigParser import SafeConfigParser
 from rdrei.utils import session, metadata, local, local_manager,\
         Request
 from rdrei.controllers import get_controller
-from rdrei.appcache import ApplicationCache
-import rdrei.models, logging
+from rdrei.core.appcache import ApplicationCache
+import logging
 
 log = logging.getLogger(__name__)
 
@@ -22,10 +22,15 @@ class RdreiApplication(object):
         db_uri = self.get_config("database", "sqlalchemy.url")
         self.database_engine = create_engine(db_uri, convert_unicode=True)
 
+        self.bind_to_context()
         self.make_middleware()
         self.load_appcache()
 
     def make_middleware(self):
+        """Loads the middleware by "replacing" the dispatcher with a patched
+        instance. This has to be redesigned from scratch, as this is not
+        customizable by users."""
+        log.debug("Binding path / to "+self.get_config('locations', 'static'))
         self.dispatch = SharedDataMiddleware(self.dispatch, {
             '/static':  self.get_config('locations', 'static')
         })
@@ -73,9 +78,9 @@ class RdreiApplication(object):
         #request.bind_to_context()
 
         # Get url_map from app_name.urls
-        url_map = self.import_from_app("urls", "url_map")
+        self.url_map = self.import_from_app("urls", "url_map")
 
-        local.url_adapter = adapter = url_map.bind_to_environ(environ)
+        local.url_adapter = adapter = self.url_map.bind_to_environ(environ)
         try:
             endpoint, values = adapter.match(request.path)
             handler = get_controller(request, endpoint)

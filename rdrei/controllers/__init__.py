@@ -8,7 +8,7 @@
     :license: GPL, see doc/LICENSE for more details.
 """
 
-from rdrei.local import local
+from rdrei.core.local import local
 from rdrei.utils import render_template
 
 from functools import wraps
