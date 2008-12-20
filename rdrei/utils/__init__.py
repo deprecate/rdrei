@@ -7,7 +7,7 @@ from hashlib import sha1
 from random import random
 import time, logging
 
-from rdrei.i18n import get_translations
+from rdrei.i18n import get_translations, set_locale
 from rdrei.core.local import local, local_manager
 
 application = local('application')
@@ -68,14 +68,14 @@ class Request(RequestBase):
         lang = session.get('locale')
         if lang is None:
             lang = (self.accept_languages.best or 'en').split('-')[0]
-        self.locale = Locale.parse(lang)
+        set_locale(Locale.parse(lang))
 
     def set_language(self, lang):
         self.session['locale'] = lang
 
     @property
     def translations(self):
-        return get_translations(self.locale)
+        return get_translations()
 
     def _(self, *args, **kwargs):
         return self.translations.ugettext(*args, **kwargs)

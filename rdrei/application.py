@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
-from werkzeug import ClosingIterator, SharedDataMiddleware
+from werkzeug import ClosingIterator, SharedDataMiddleware,\
+        import_string
 from werkzeug.exceptions import HTTPException, NotFound
-from beaker.middleware import CacheMiddleware, SessionMiddleware
+from werkzeug.routing import RequestRedirect
 
 from os import path
 from ConfigParser import SafeConfigParser
@@ -30,14 +31,21 @@ class RdreiApplication(object):
         """Loads the middleware by "replacing" the dispatcher with a patched
         instance. This has to be redesigned from scratch, as this is not
         customizable by users."""
-        log.debug("Binding path / to "+self.get_config('locations', 'static'))
         self.dispatch = SharedDataMiddleware(self.dispatch, {
             '/static':  self.get_config('locations', 'static')
         })
-        self.dispatch = CacheMiddleware(self.dispatch,
-                                        dict(self.config.items("general")))
-        self.dispatch = SessionMiddleware(self.dispatch,
-                                          dict(self.config.items("general")))
+        for mw in self._get_conflist("middleware"):
+            self.dispatch = mw(self.dispatch,
+                               dict(self.config.items("general")))
+        #self.dispatch = CacheMiddleware(self.dispatch,
+        #                                dict(self.config.items("general")))
+        #self.dispatch = SessionMiddleware(self.dispatch,
+        #                                  dict(self.config.items("general")))
+
+    def _get_conflist(self, ssection):
+        """Returns a module list of comma-seperated values in the config.ini subsection
+        ssection."""
+        return [import_string(m.strip()) for m in self.config.get("general", ssection).split(',') if m]
 
     def load_appcache(self):
         self.cache = ApplicationCache(self.config.get("general",
@@ -72,6 +80,11 @@ class RdreiApplication(object):
     def dispatch(self, environ, start_response):
         self.bind_to_context()
         request = Request(environ)
+        processors = self._get_conflist("processors")
+        # Apply the request processors
+        for processor in processors:
+            processor.process_request(request)
+
         # This is ugly and reminds me too much of pylons.
         # Let's try to live without it and see how much carrying the request
         # with us annoys us.
@@ -84,14 +97,31 @@ class RdreiApplication(object):
         try:
             endpoint, values = adapter.match(request.path)
             handler = get_controller(request, endpoint)
-            response = handler(**values)
         except NotFound:
             response = get_controller(request, 'static/not_found')()
             response.status_code = 404
-        except HTTPException, e:
-            response = e.get_response(environ)
+        except (HTTPException, RequestRedirect), e:
+            response = e
+        else:
+            for processor in processors:
+                action = processor.process_view(request, handler, values)
+                if action:
+                    return action(environ, start_response)
+        try:
+            response = handler(**values)
+        except Exception, e:
+            # If the handler raised an exception, process it.
+            for processor in reversed(processors):
+                action = processor.process_exception(request, e)
+                if action:
+                    # If process_exception returned something, process it.
+                    return action(environ, start_response)
+            # In case no hook applied, raise it.
+            raise
 
-        request.session.save()
+        for processor in reversed(processors):
+            response = processor.process_response(request, response)
+
         return ClosingIterator(response(environ, start_response),
                                [session.remove, local_manager.cleanup])
 

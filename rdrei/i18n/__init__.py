@@ -23,19 +23,46 @@ log = logging.getLogger(__name__)
 _translations = {}
 
 
-def get_translations(locale):
+def get_translations(locale=None):
     """Get the translation for a locale."""
+    if not locale:
+        locale = local('locale')
     translations = _translations.get(str(locale))
     if translations is not None:
         return translations
-    rv = Translations.load(os.path.dirname(__file__), [locale])
+    application = local('application')
+    rv = Translations.load(os.path.join(application.HERE_PATH,
+                                        application.cache.appname,
+                                        "i18n"), [locale])
     _translations[str(locale)] = rv
     return rv
+
+def set_locale(locale):
+    local.locale = locale
+
+def gettext(string):
+    """Translate the given string to the language of the application."""
+    locale = getattr(local, 'locale', None)
+    if not locale:
+        return string
+    return get_translations(locale).ugettext(string)
+
+
+def ngettext(singular, plural, n):
+    """Translate the possible pluralized string to the language of the
+    application.
+    """
+    locale = getattr(local, 'locale', None)
+    if not locale:
+        if n == 1:
+            return singular
+        return plural
+    return get_translations(locale).ungettext(singular, plural, n)
+
 
 def format_datetime(datetime=None, format='medium'):
     """Return a date formatted according to the given pattern."""
     return _date_format(dates.format_datetime, datetime, format)
-
 
 def list_languages():
     """Return a list of all languages."""
@@ -159,10 +186,11 @@ class _TranslationProxy(object):
 
 def lazy_gettext(request, string):
     """A lazy version of `gettext`."""
-    return _TranslationProxy(request.translations.gettext, string)
+    return _TranslationProxy(get_translations().gettext, string)
 
 
 def lazy_ngettext(request, singular, plural, n):
     """A lazy version of `ngettext`"""
-    return _TranslationProxy(request.trlanslations.ngettext, singular, plural, n)
+    return _TranslationProxy(get_translations().ngettext, singular, plural, n)
 
+_ = gettext
