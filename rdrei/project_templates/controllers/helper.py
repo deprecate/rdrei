@@ -1,3 +1,3 @@
-from rdrei.decorators import register_helper
+from ${appname}.controllers.${contname} import ${contname_cap}
 
 # Add your helpers here.
