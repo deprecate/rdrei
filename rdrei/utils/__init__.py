@@ -1,5 +1,3 @@
-from sqlalchemy import MetaData
-from sqlalchemy.orm import create_session, scoped_session
 from werkzeug import Request as RequestBase, Response
 from babel import Locale
 from jinja2 import Environment, PackageLoader
@@ -8,16 +6,12 @@ from random import random
 import time, logging
 
 from rdrei.i18n import get_translations, set_locale
-from rdrei.core.local import local, local_manager
+from rdrei.core.local import local
 
 application = local('application')
 url_map = local('url_adapter')
 
 log = logging.getLogger(__name__)
-
-metadata = MetaData()
-session = scoped_session(lambda: create_session(application.database_engine,
-                         autocommit=True), local_manager.get_ident)
 
 def url_for(endpoint, _external=False, **values):
     return local.url_adapter.build(endpoint, values, force_external=_external)

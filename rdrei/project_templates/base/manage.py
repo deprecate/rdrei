@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 from werkzeug import script
+from rdrei.management import make_controller
 
-import logging, os
+import logging
 
 def make_app():
     from rdrei.application import RdreiApplication
-    return RdreiApplication(os.path.join(os.path.dirname(__file__), "config.ini"))
+    # Choose another config file name, to provide a debug environment.
+    return RdreiApplication("config.ini")
 
 def make_shell():
-    from rdrei import models, utils
+    from rdrei import utils
+    from ${appname} import models
     application = make_app()
     return locals()
 
@@ -26,7 +29,9 @@ action_runserver = script.make_runserver(make_app, use_reloader=True,
                                          use_debugger=True)
 action_shell = script.make_shell(make_shell)
 action_initdb = lambda: make_app().init_database()
+action_controller = make_controller()
 
-setup_logging()
-script.run()
+if __name__ == '__main__':
+    setup_logging()
+    script.run()
 

@@ -1,4 +1,14 @@
-"""A class for the registration of applications, controllers and so on."""
+# -*- coding: utf-8 -*-
+"""
+ rdrei.appcache
+ ~~~~~~~~~~~~~~~~
+ <{A class for registration of application. Used for proloading models and
+ controllers.}>
+
+
+ :copyright: 2008 by Pascal Hartig <phartig@rdrei.net>
+ :license: GPL, see doc/LICENSE for more details.
+ """
 
 from werkzeug.utils import find_modules
 

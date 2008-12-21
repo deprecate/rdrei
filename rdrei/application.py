@@ -7,8 +7,9 @@ from werkzeug.routing import RequestRedirect
 from os import path
 from ConfigParser import SafeConfigParser
 
-from rdrei.utils import session, metadata, local, local_manager,\
-        Request
+from rdrei.core.local import local, local_manager
+from rdrei.utils import Request
+from rdrei.db import session, metadata
 from rdrei.controllers import get_controller
 from rdrei.core.appcache import ApplicationCache
 import logging
