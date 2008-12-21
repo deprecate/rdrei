@@ -1,4 +1,0 @@
-Werkzeug
-jinja2
-Babel
-sqlalchemy

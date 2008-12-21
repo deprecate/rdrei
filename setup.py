@@ -8,9 +8,9 @@ except ImportError:
 setup(
     name='rdrei',
     version='0.1',
-    description='',
-    author='',
-    author_email='',
+    description='A web framework built on top of Werkzeug.',
+    author='Pascal Hartig',
+    author_email='phartig@rdrei.net',
     #url='',
     install_requires=[
         "Werkzeug",
@@ -21,4 +21,5 @@ setup(
     ],
     packages=find_packages(exclude=['ez_setup']),
     include_package_data=True,
+    scripts = ['rdrei-admin.py'],
 )
