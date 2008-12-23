@@ -8,3 +8,4 @@ BaseModel = declarative_base()
 metadata = BaseModel.metadata
 session = scoped_session(lambda: create_session(application.database_engine,
                          autocommit=False, autoflush=True), local_manager.get_ident)
+

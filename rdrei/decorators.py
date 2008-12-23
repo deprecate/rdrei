@@ -1,7 +1,13 @@
-import time, logging, inspect
-from functools import wraps
-
 from rdrei.local import local
+
+from functools import wraps
+import time, logging, inspect
+
+authkit_installed = True
+try:
+    from authkit.authorize import authorize_request
+except ImportError:
+    authkit_installed = False
 
 log = logging.getLogger(__name__)
 
@@ -148,4 +154,16 @@ def _make_dict_from_args(func, args):
         if arg not in ("self", "request"):
             args_keys[arg] = args[i]
     return args_keys
+
+def authorize(permission):
+    if not authkit_installed:
+        # Abort already on parsing time!
+        raise ImportError("AuthKit must be installed to call authorize!")
+    def _outer(func):
+        @wraps(func)
+        def _inner(self, *args, **kwargs):
+            authorize_request(self.request.environ, permission)
+            return func(self, *args, **kwargs)
+        return _inner
+    return _outer
 

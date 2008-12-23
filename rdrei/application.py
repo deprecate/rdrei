@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine
 from werkzeug import ClosingIterator, SharedDataMiddleware,\
-        import_string
+        import_string, cached_property
 from werkzeug.exceptions import HTTPException, NotFound
 from werkzeug.routing import RequestRedirect
 
@@ -17,15 +17,18 @@ import logging
 log = logging.getLogger(__name__)
 
 class RdreiApplication(object):
-    def __init__(self, configfile):
+    def __init__(self, configfile, skip_middleware=False):
         self._load_config(configfile)
         self.HERE_PATH = path.abspath(path.dirname(configfile))
 
         db_uri = self.get_config("database", "sqlalchemy.url")
         self.database_engine = create_engine(db_uri, convert_unicode=True)
+        if self.debug:
+            self.database_engine.echo = True
 
         self.bind_to_context()
-        self.make_middleware()
+        if not skip_middleware:
+            self.make_middleware()
         self.load_appcache()
 
     def make_middleware(self):
@@ -36,6 +39,7 @@ class RdreiApplication(object):
             '/static':  self.get_config('locations', 'static')
         })
         for mw in self._get_conflist("middleware"):
+            log.debug("Loading middleware %r." % mw)
             self.dispatch = mw(self.dispatch,
                                dict(self.config.items("general")))
         #self.dispatch = CacheMiddleware(self.dispatch,
@@ -65,6 +69,10 @@ class RdreiApplication(object):
         return self.config.get(section, key, False, {
             'here': self.HERE_PATH
         })
+
+    @cached_property
+    def debug(self):
+        return self.config.getboolean("general", "application.debug")
 
     def init_database(self):
         metadata.create_all(self.database_engine)
