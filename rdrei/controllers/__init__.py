@@ -34,10 +34,19 @@ class BaseController(object):
     helpers = dict()
     _need_request = list()
 
-    def __init__(self, request):
+    def __init__(self, request, skip_before=False):
         self.request = request
         self.translations = self.request.translations
         self._load_helpers()
+        if not skip_before:
+            self.__before__()
+
+    def __before__(self):
+        """Implement this and decorate it or add tests to
+        it like authorization checks. This is called
+        before any action is and is a great place
+        to restrict the whole controller."""
+        pass
 
     def render_to_response(self, template, context = None):
         context = context or {}

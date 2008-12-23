@@ -131,6 +131,7 @@ class RdreiApplication(object):
         for processor in reversed(processors):
             response = processor.process_response(request, response)
 
+        # Make sure SA session is closed properly.
         return ClosingIterator(response(environ, start_response),
                                [session.remove, local_manager.cleanup])
 
