@@ -108,17 +108,17 @@ class RdreiApplication(object):
                 action = processor.process_view(request, handler, values)
                 if action:
                     return action(environ, start_response)
-        try:
-            response = handler(**values)
-        except Exception, e:
-            # If the handler raised an exception, process it.
-            for processor in reversed(processors):
-                action = processor.process_exception(request, e)
-                if action:
-                    # If process_exception returned something, process it.
-                    return action(environ, start_response)
-            # In case no hook applied, raise it.
-            raise
+            try:
+                response = handler(**values)
+            except Exception, e:
+                # If the handler raised an exception, process it.
+                for processor in reversed(processors):
+                    action = processor.process_exception(request, e)
+                    if action:
+                        # If process_exception returned something, process it.
+                        return action(environ, start_response)
+                # In case no hook applied, raise it.
+                raise
 
         for processor in reversed(processors):
             response = processor.process_response(request, response)
