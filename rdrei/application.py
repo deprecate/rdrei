@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+ rdrei.application
+ ~~~~~~~~~~~~~~~~
+ WSGI entry point for rdrei.
+
+
+ :copyright: 2008 by Pascal Hartig <phartig@rdrei.net>
+ :license: GPL, see doc/LICENSE for more details.
+"""
+
 from sqlalchemy import create_engine
 from werkzeug import ClosingIterator, SharedDataMiddleware,\
         import_string, cached_property
@@ -16,8 +27,14 @@ import logging
 
 log = logging.getLogger(__name__)
 
+#TODO:
+#    * Check whether SafeConfigParser does some kind of caching!
+
 class RdreiApplication(object):
     def __init__(self, configfile, skip_middleware=False):
+        """Initializes the WSGI application. Loading configfile
+        as INI with SafeConfigParser. Skips middleware on demand
+        for use in shell or so."""
         self._load_config(configfile)
         self.HERE_PATH = path.abspath(path.dirname(configfile))
 
@@ -29,7 +46,7 @@ class RdreiApplication(object):
         self.bind_to_context()
         if not skip_middleware:
             self.make_middleware()
-        self.load_appcache()
+       self.load_appcache()
 
     def make_middleware(self):
         """Loads the middleware by "replacing" the dispatcher with a patched
@@ -57,6 +74,8 @@ class RdreiApplication(object):
                                                       "application.name"), self)
 
     def bind_to_context(self):
+        """Makes the application globally available in current thread by
+        attaching it to the local object."""
         local.application = self
 
     def _load_config(self, configfile):
